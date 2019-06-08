@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
+const denominationsRouter = require('./denominations/denominations-router');
 
 const app = express();
 
@@ -15,16 +16,7 @@ app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
 
-app.get('/api/denominations', (req, res, next) => {
-  req.app
-    .get('db')
-    .from('denominations')
-    .select('*')
-    .then(denominations => {
-      res.json(denominations);
-    })
-    .catch(err => next(err));
-});
+app.use('/api/denominations', denominationsRouter);
 
 app.use(function errorHandler(error, req, res, next) {
   let response;
