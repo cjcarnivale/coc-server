@@ -1,0 +1,13 @@
+CREATE TABLE safe_count (
+  id DATE PRIMARY KEY,
+  quarters NUMERIC NOT NULL,
+  dimes NUMERIC NOT NULL,
+  nickles NUMERIC NOT NULL,
+  pennies NUMERIC NOT NULL,
+  ones NUMERIC NOT NULL,
+  fives NUMERIC NOT NULL,
+  tens NUMERIC NOT NULL,
+  twenties NUMERIC NOT NULL,
+  fifties NUMERIC NOT NULL,
+  hundreds NUMERIC NOT NULL
+); 

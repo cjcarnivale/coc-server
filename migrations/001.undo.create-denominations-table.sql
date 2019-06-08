@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS denominations
+DROP TABLE IF EXISTS denominations;
