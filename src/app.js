@@ -7,6 +7,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 const denominationsRouter = require('./denominations/denominations-router');
+const safeCountRouter = require('./safe-count/safe-count-router'); 
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(helmet());
 app.use(cors());
 
 app.use('/api/denominations', denominationsRouter);
+app.use('/api/safecount/', safeCountRouter);
 
 app.use(function errorHandler(error, req, res, next) {
   let response;
