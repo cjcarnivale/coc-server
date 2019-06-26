@@ -10,7 +10,9 @@ safeCountRouter
   .route("/")
   .get(async (req, res, next) => {
     try {
-      const safeCounts = await safeCountService.getAllSafeCounts(req.app.get("db"));
+      const safeCounts = await safeCountService.getAllSafeCounts(
+        req.app.get("db")
+      );
       res.status(200).json(safeCounts);
       next();
     } catch (error) {
@@ -57,5 +59,21 @@ safeCountRouter
       next(error);
     }
   });
+safeCountRouter.route("/:id").get(async (req, res, next) => {
+  try {
+    const safeCount = await safeCountService.getSafeCountById(
+      req.app.get("db"),
+      req.params.id
+    );
+    if (safeCount.length === 0) {
+      return res
+        .status(404)
+        .json({ errors: [`Safe count for that day doesn't exist`] });
+    }
+    return res.status(200).json(safeCount);
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = safeCountRouter;

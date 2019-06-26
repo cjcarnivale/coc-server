@@ -18,7 +18,7 @@ app.use(helmet());
 app.use(cors());
 
 app.use('/api/denominations', denominationsRouter);
-app.use('/api/safecount/', safeCountRouter);
+app.use('/api/safecounts/', safeCountRouter);
 
 app.use(function errorHandler(error, req, res, next) {
   let response;
