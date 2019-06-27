@@ -68,7 +68,7 @@ safeCountRouter.route("/:id").get(async (req, res, next) => {
     if (safeCount.length === 0) {
       return res
         .status(404)
-        .json({ errors: [`Safe count for that day doesn't exist`] });
+        .json({ error: `Safe count for that day doesn't exist`});
     }
     return res.status(200).json(safeCount);
   } catch (error) {
