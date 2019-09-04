@@ -66,8 +66,8 @@ safeCountRouter
       const validation = Joi.validate(newSafeCount, schema);
 
       if (validation.error){
-        res.status(400).json({error: 'All inputs must be whole numbers'}); 
-      } else {
+        return res.status(400).json({error: 'All inputs must be whole numbers'}); 
+      } 
 
       const safeCount = await safeCountService.insertSafeCount(
         req.app.get("db"),
@@ -77,13 +77,13 @@ safeCountRouter
       let cleanCount = safeCountService.sanitizeData(safeCount)
       res.status(201).json(cleanCount);
       next();
-      }
     } catch (error) {
       next(error);
     }
   });
   
-safeCountRouter.route("/:id").get(async (req, res, next) => {
+safeCountRouter.route("/:id")
+.get(async (req, res, next) => {
   try {
     let safeCount = await safeCountService.getSafeCountById(
       req.app.get("db"),
@@ -99,6 +99,67 @@ safeCountRouter.route("/:id").get(async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+})
+.patch(bodyParser, async(req,res,next) => {
+  try {
+    const {
+      date,
+      quarters,
+      dimes,
+      nickles,
+      pennies,
+      ones,
+      fives,
+      tens,
+      twenties,
+      fifties,
+      hundreds,
+    } = req.body;
+    const newCount = {
+      id: date,
+      quarters,
+      dimes,
+      nickles,
+      pennies,
+      ones,
+      fives,
+      tens,
+      twenties,
+      fifties,
+      hundreds
+    };
+
+    const schema = Joi.object({
+      id: Joi.date(),
+      quarters: Joi.number().integer(),
+      dimes: Joi.number().integer(),
+      nickles: Joi.number().integer(),
+      pennies: Joi.number().integer(),
+      ones: Joi.number().integer(),
+      fives: Joi.number().integer(),
+      tens: Joi.number().integer(),
+      twenties: Joi.number().integer(),
+      fifties: Joi.number().integer(),
+      hundreds: Joi.number().integer()
+    })
+
+    const validation = Joi.validate(newCount, schema);
+
+    if (validation.error) {
+      return res.status(400).json({error: 'All inputs must be whole numbers'})
+    }
+    
+    await safeCountService.updateSafeCount(
+      req.app.get('db'),
+      newCount,
+      req.params.id
+      )
+  res.status(204).end()
+  next()
+  }
+  catch(error){
+    next(error); 
+  }
+}); 
 
 module.exports = safeCountRouter;

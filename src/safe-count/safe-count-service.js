@@ -19,6 +19,13 @@ const safeCountService = {
       .returning('*');
   },
 
+  updateSafeCount(db, newCount, id){
+    return db('safe_count')
+      .where({id})
+      .update(newCount)
+      .returning('*'); 
+  },
+
   sanitizeData(counts){
     let clean = counts.map(count => {
       let cleanCount = {}; 
