@@ -66,22 +66,23 @@ safeCountRouter
       const validation = Joi.validate(newSafeCount, schema);
 
       if (validation.error){
-        res.status(400).json({error: 'All inputs must be numeric'}); 
-      }
-
+        res.status(400).json({error: 'All inputs must be whole numbers'}); 
+      } else {
 
       const safeCount = await safeCountService.insertSafeCount(
         req.app.get("db"),
         newSafeCount
       );
       
-      let cleanCount = safeCountService.sanitizeDate(safeCount)
+      let cleanCount = safeCountService.sanitizeData(safeCount)
       res.status(201).json(cleanCount);
       next();
+      }
     } catch (error) {
       next(error);
     }
   });
+  
 safeCountRouter.route("/:id").get(async (req, res, next) => {
   try {
     let safeCount = await safeCountService.getSafeCountById(
