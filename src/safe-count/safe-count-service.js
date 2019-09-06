@@ -1,9 +1,11 @@
 'use strict';
-const xss = require('xss'); 
+const xss = require('xss');
 
 const safeCountService = {
   getAllSafeCounts(db) {
-    return db('safe_count').select('*').orderBy('id');
+    return db('safe_count')
+      .select('*')
+      .orderBy('id');
   },
 
   getSafeCountById(db, id) {
@@ -19,22 +21,28 @@ const safeCountService = {
       .returning('*');
   },
 
-  updateSafeCount(db, newCount, id){
+  updateSafeCount(db, newCount, id) {
     return db('safe_count')
-      .where({id})
+      .where({ id })
       .update(newCount)
-      .returning('*'); 
+      .returning('*');
   },
 
-  sanitizeData(counts){
+  deleteSafeCount(db, id) {
+    return db('safe_count')
+      .where({ id })
+      .delete();
+  },
+
+  sanitizeData(counts) {
     let clean = counts.map(count => {
-      let cleanCount = {}; 
+      let cleanCount = {};
       for (let key in count) {
-        cleanCount[xss(key)] = xss(count[key]); 
+        cleanCount[xss(key)] = xss(count[key]);
       }
-      return cleanCount; 
+      return cleanCount;
     });
-    return clean; 
+    return clean;
   }
 };
 
