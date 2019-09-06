@@ -3,7 +3,7 @@ const xss = require('xss');
 
 const safeCountService = {
   getAllSafeCounts(db) {
-    return db('safe_count').select('*');
+    return db('safe_count').select('*').orderBy('id');
   },
 
   getSafeCountById(db, id) {
