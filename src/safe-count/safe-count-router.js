@@ -68,7 +68,7 @@ safeCountRouter
       if (validation.error) {
         return res
           .status(400)
-          .json({ error: "All inputs must be whole numbers" });
+          .json({ error: "All inputs must be whole numbers and date must be valid" });
       }
 
       const safeCount = await safeCountService.insertSafeCount(
@@ -80,6 +80,11 @@ safeCountRouter
       res.status(201).json(cleanCount);
       next();
     } catch (error) {
+      if (error.constraint ===  'safe_count_pkey'){
+        return res
+          .status(400)
+          .json({ error: "A count for that day has been entered already"})
+      }
       next(error);
     }
   });
