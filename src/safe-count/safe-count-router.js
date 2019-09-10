@@ -66,9 +66,9 @@ safeCountRouter
       const validation = Joi.validate(newSafeCount, schema);
 
       if (validation.error) {
-        return res
-          .status(400)
-          .json({ error: "All inputs must be whole numbers and date must be valid" });
+        return res.status(400).json({
+          error: "All inputs must be whole numbers and date must be valid"
+        });
       }
 
       const safeCount = await safeCountService.insertSafeCount(
@@ -80,10 +80,10 @@ safeCountRouter
       res.status(201).json(cleanCount);
       next();
     } catch (error) {
-      if (error.constraint ===  'safe_count_pkey'){
+      if (error.constraint === "safe_count_pkey") {
         return res
           .status(400)
-          .json({ error: "A count for that day has been entered already"})
+          .json({ error: "A count for that day has been entered already" });
       }
       next(error);
     }
@@ -105,6 +105,9 @@ safeCountRouter
       let cleanCount = safeCountService.sanitizeData(safeCount);
       return res.status(200).json(cleanCount);
     } catch (error) {
+      if (error.routine === "DateTimeParseError") {
+        return res.status(404).end();
+      }
       next(error);
     }
   })
