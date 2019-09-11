@@ -99,15 +99,12 @@ safeCountRouter
       );
       if (safeCount.length === 0) {
         return res
-          .status(404)
-          .json({ error: `Safe count for that day doesn't exist` });
+          .status(200)
+          .json({ currentDayEntered: false });
       }
       let cleanCount = safeCountService.sanitizeData(safeCount);
       return res.status(200).json(cleanCount);
     } catch (error) {
-      if (error.routine === "DateTimeParseError") {
-        return res.status(404).end();
-      }
       next(error);
     }
   })
