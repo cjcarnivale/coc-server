@@ -14,7 +14,7 @@ safeCountRouter
       const safeCounts = await safeCountService.getAllSafeCounts(
         req.app.get("db")
       );
-      let cleanCounts = safeCountService.sanitizeData(safeCounts);
+      let cleanCounts = await safeCountService.sanitizeData(safeCounts);
       res.status(200).json(cleanCounts);
     } catch (error) {
       next(error);
@@ -76,7 +76,7 @@ safeCountRouter
         newSafeCount
       );
 
-      let cleanCount = safeCountService.sanitizeData(safeCount);
+      let cleanCount = await safeCountService.sanitizeData(safeCount);
       res.status(201).json(cleanCount);
       next();
     } catch (error) {
@@ -99,10 +99,10 @@ safeCountRouter
       );
       if (safeCount.length === 0) {
         return res
-          .status(200)
-          .json({ currentDayEntered: false });
+          .status(404)
+          .json({ error: "Today's safe count not entered" });
       }
-      let cleanCount = safeCountService.sanitizeData(safeCount);
+      let cleanCount = await safeCountService.sanitizeData(safeCount);
       return res.status(200).json(cleanCount);
     } catch (error) {
       next(error);
@@ -156,7 +156,7 @@ safeCountRouter
       if (validation.error) {
         return res
           .status(400)
-          .json({ error: "All inputs must be whole numbers" });
+          .json({ error: "All inputs must be whole numbers and date must be vaild" });
       }
 
       await safeCountService.updateSafeCount(
