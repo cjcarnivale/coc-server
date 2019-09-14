@@ -1,7 +1,14 @@
 'use strict';
+const denominationService = {
+  getSafeCountDenominations(db) {
+    return db('denominations').select('*');
+  },
 
-function getDenominations(db) {
-  return db('denominations').select('*');
-}
+  getChangeOrderDenominations(db) {
+    return db('denominations')
+      .select('*')
+      .where('change_order', true);
+  }
+};
 
-module.exports = { getDenominations };
+module.exports = denominationService;

@@ -97,11 +97,6 @@ safeCountRouter
         req.app.get("db"),
         req.params.id
       );
-      if (safeCount.length === 0) {
-        return res
-          .status(404)
-          .json({ error: "Today's safe count not entered" });
-      }
       let cleanCount = await safeCountService.sanitizeData(safeCount);
       return res.status(200).json(cleanCount);
     } catch (error) {

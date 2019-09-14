@@ -17,6 +17,13 @@ const changeOrderService = {
     return db('change_order')
       .select('*')
       .whereBetween('id', [lastWeek, today]);
+  },
+
+  insertChangeOrder(db, newChangeOrder) {
+    return db('change_order')
+      .insert(newChangeOrder)
+      .into('change_order')
+      .returning('*');
   }
 };
 
