@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const express = require("express");
-const safeCountService = require("./safe-count-service");
-const Joi = require("@hapi/joi");
+const express = require('express');
+const safeCountService = require('./safe-count-service');
+const Joi = require('@hapi/joi');
 
 const bodyParser = express.json();
 const safeCountRouter = express.Router();
 
 safeCountRouter
-  .route("/")
+  .route('/')
   .get(async (req, res, next) => {
     try {
       const safeCounts = await safeCountService.getAllSafeCounts(
-        req.app.get("db")
+        req.app.get('db')
       );
       let cleanCounts = await safeCountService.sanitizeData(safeCounts);
       res.status(200).json(cleanCounts);
@@ -67,12 +67,12 @@ safeCountRouter
 
       if (validation.error) {
         return res.status(400).json({
-          error: "All inputs must be whole numbers and date must be valid"
+          error: 'All inputs must be whole numbers and date must be valid'
         });
       }
 
       const safeCount = await safeCountService.insertSafeCount(
-        req.app.get("db"),
+        req.app.get('db'),
         newSafeCount
       );
 
@@ -80,21 +80,21 @@ safeCountRouter
       res.status(201).json(cleanCount);
       next();
     } catch (error) {
-      if (error.constraint === "safe_count_pkey") {
+      if (error.constraint === 'safe_count_pkey') {
         return res
           .status(400)
-          .json({ error: "A count for that day has been entered already" });
+          .json({ error: 'A count for that day has been entered already' });
       }
       next(error);
     }
   });
 
 safeCountRouter
-  .route("/:id")
+  .route('/:id')
   .get(async (req, res, next) => {
     try {
       let safeCount = await safeCountService.getSafeCountById(
-        req.app.get("db"),
+        req.app.get('db'),
         req.params.id
       );
       let cleanCount = await safeCountService.sanitizeData(safeCount);
@@ -151,11 +151,13 @@ safeCountRouter
       if (validation.error) {
         return res
           .status(400)
-          .json({ error: "All inputs must be whole numbers and date must be vaild" });
+          .json({
+            error: 'All inputs must be whole numbers and date must be vaild'
+          });
       }
 
       await safeCountService.updateSafeCount(
-        req.app.get("db"),
+        req.app.get('db'),
         newCount,
         req.params.id
       );
@@ -167,7 +169,7 @@ safeCountRouter
   })
   .delete(async (req, res, next) => {
     try {
-      await safeCountService.deleteSafeCount(req.app.get("db"), req.params.id);
+      await safeCountService.deleteSafeCount(req.app.get('db'), req.params.id);
       res.status(204).end();
       next();
     } catch (error) {

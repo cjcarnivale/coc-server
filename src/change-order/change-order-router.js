@@ -1,78 +1,78 @@
-"use strict";
+'use strict';
 
-const express = require("express");
-const changeOrderService = require("./change-order-service");
-const safeCountService = require("../safe-count/safe-count-service");
+const express = require('express');
+const changeOrderService = require('./change-order-service');
+const safeCountService = require('../safe-count/safe-count-service');
 
 const bodyParser = express.json();
 const changeOrderRouter = express.Router();
 
-const dayjs = require("dayjs");
-const Joi = require("@hapi/joi")
+const dayjs = require('dayjs');
+const Joi = require('@hapi/joi');
 
-changeOrderRouter.route("/")
-.post(bodyParser, async (req, res, next) => {
-  try {
-    const {
-      date,
-      quarters,
-      dimes,
-      nickles,
-      pennies,
-      ones,
-      fives
-    } = req.body;
-    const newChangeOrder = {
-      id: date,
-      quarters,
-      dimes,
-      nickles,
-      pennies,
-      ones,
-      fives
+changeOrderRouter.route('/')
+  .post(bodyParser, async (req, res, next) => {
+    try {
+      const {
+        date,
+        quarters,
+        dimes,
+        nickles,
+        pennies,
+        ones,
+        fives
+      } = req.body;
+      const newChangeOrder = {
+        id: date,
+        quarters,
+        dimes,
+        nickles,
+        pennies,
+        ones,
+        fives
 
-    };
+      };
 
-    const schema = Joi.object({
-      id: Joi.date(),
-      quarters: Joi.number().integer(),
-      dimes: Joi.number().integer(),
-      nickles: Joi.number().integer(),
-      pennies: Joi.number().integer(),
-      ones: Joi.number().integer(),
-      fives: Joi.number().integer(),
-    });
-
-    const validation = Joi.validate(newChangeOrder, schema);
-
-    if (validation.error) {
-      return res.status(400).json({
-        error: "All inputs must be whole numbers and date must be valid"
+      const schema = Joi.object({
+        id: Joi.date(),
+        quarters: Joi.number().integer(),
+        dimes: Joi.number().integer(),
+        nickles: Joi.number().integer(),
+        pennies: Joi.number().integer(),
+        ones: Joi.number().integer(),
+        fives: Joi.number().integer(),
       });
-    }
 
-    const safeCount = await changeOrderService.insertChangeOrder(
-      req.app.get("db"),
-      newChangeOrder
-    );
+      const validation = Joi.validate(newChangeOrder, schema);
 
-    let cleanCount = await safeCountService.sanitizeData(safeCount);
-    res.status(201).json(cleanCount);
-    next();
-  } catch (error) {
-    if (error.constraint === "safe_count_pkey") {
-      return res
-        .status(400)
-        .json({ error: "A count for that day has been entered already" });
+      if (validation.error) {
+        return res.status(400).json({
+          error: 'All inputs must be whole numbers and date must be valid'
+        });
+      }
+
+      const safeCount = await changeOrderService.insertChangeOrder(
+        req.app.get('db'),
+        newChangeOrder
+      );
+
+      let cleanCount = await safeCountService.sanitizeData(safeCount);
+      res.status(201).json(cleanCount);
+      next();
+    } catch (error) {
+      if (error.constraint === 'safe_count_pkey') {
+        return res
+          .status(400)
+          .json({ error: 'A count for that day has been entered already' });
+      }
+      next(error);
     }
-    next(error);
-  }
-});
-;
-changeOrderRouter.route("/:id").get(async (req, res, next) => {
+  });
+
+changeOrderRouter.route('/:id').get(async (req, res, next) => {
   try {
     let changeOrder = await changeOrderService.getChangeOrderByID(
-      req.app.get("db"),
+      req.app.get('db'),
       req.params.id
     );
     let cleanCount = safeCountService.sanitizeData(changeOrder);
@@ -82,38 +82,38 @@ changeOrderRouter.route("/:id").get(async (req, res, next) => {
   }
 });
 
-changeOrderRouter.route("/generatecount/:id").get(async (req, res, next) => {
+changeOrderRouter.route('/generatecount/:id').get(async (req, res, next) => {
   try {
     let todaySafeCount = await safeCountService.getSafeCountById(
-      req.app.get("db"),
+      req.app.get('db'),
       req.params.id
     );
     if (todaySafeCount.length === 0) {
-      return res.status(404).json({error: "Today's safe count not entered"})
+      return res.status(404).json({error: 'Today\'s safe count not entered'});
     }
 
     const changeOrderDenominations = [
-      "quarters",
-      "dimes",
-      "nickles",
-      "pennies",
-      "ones",
-      "fives"
+      'quarters',
+      'dimes',
+      'nickles',
+      'pennies',
+      'ones',
+      'fives'
     ];
 
     let lastWeekSafeCount = await safeCountService.getSafeCountById(
-      req.app.get("db"),
-      dayjs(req.params.id).subtract(7, "day")
+      req.app.get('db'),
+      dayjs(req.params.id).subtract(7, 'day')
     );
     if (lastWeekSafeCount.length === 0) {
       return res
         .status(404)
-        .json({ error: "Last week's safe count not entered" });
+        .json({ error: 'Last week\'s safe count not entered' });
     }
 
     let lastWeekChangeOrders = await changeOrderService.getLastWeekChangeOrders(
-      req.app.get("db"),
-      dayjs(req.params.id).subtract(7, "day"),
+      req.app.get('db'),
+      dayjs(req.params.id).subtract(7, 'day'),
       req.params.id
     );
 
@@ -137,7 +137,7 @@ changeOrderRouter.route("/generatecount/:id").get(async (req, res, next) => {
 
     let newChangeOrder = [];
     let newChangeOrderDetails = {};
-    newChangeOrderDetails.date = todaySafeCount[0]["id"];
+    newChangeOrderDetails.date = todaySafeCount[0]['id'];
 
     changeOrderDenominations.forEach(den => {
       let diff =
@@ -155,7 +155,7 @@ changeOrderRouter.route("/generatecount/:id").get(async (req, res, next) => {
         }
       });
     if (negativeCheck.length > 0) {
-      return res.status(400).json({ error: "Negative usage encountered" });
+      return res.status(400).json({ error: 'Negative usage encountered' });
     }
 
     newChangeOrder.push(newChangeOrderDetails);
