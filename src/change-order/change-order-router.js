@@ -10,18 +10,22 @@ const changeOrderRouter = express.Router();
 const dayjs = require('dayjs');
 const Joi = require('@hapi/joi');
 
-changeOrderRouter.route('/')
+changeOrderRouter
+  .route('/')
+  .get(async (req, res, next) => {
+    try {
+      const changeOrders = await changeOrderService.getAllChangeOrders(
+        req.app.get('db')
+      );
+      let cleanCounts = await safeCountService.sanitizeData(changeOrders);
+      res.status(200).json(cleanCounts);
+    } catch (error) {
+      next(error);
+    }
+  })
   .post(bodyParser, async (req, res, next) => {
     try {
-      const {
-        date,
-        quarters,
-        dimes,
-        nickles,
-        pennies,
-        ones,
-        fives
-      } = req.body;
+      const { date, quarters, dimes, nickles, pennies, ones, fives } = req.body;
       const newChangeOrder = {
         id: date,
         quarters,
@@ -30,7 +34,6 @@ changeOrderRouter.route('/')
         pennies,
         ones,
         fives
-
       };
 
       const schema = Joi.object({
@@ -40,7 +43,7 @@ changeOrderRouter.route('/')
         nickles: Joi.number().integer(),
         pennies: Joi.number().integer(),
         ones: Joi.number().integer(),
-        fives: Joi.number().integer(),
+        fives: Joi.number().integer()
       });
 
       const validation = Joi.validate(newChangeOrder, schema);
@@ -60,7 +63,7 @@ changeOrderRouter.route('/')
       res.status(201).json(cleanCount);
       next();
     } catch (error) {
-      if (error.constraint === 'safe_count_pkey') {
+      if (error.constraint === 'change_order_pkey') {
         return res
           .status(400)
           .json({ error: 'A count for that day has been entered already' });
@@ -69,18 +72,73 @@ changeOrderRouter.route('/')
     }
   });
 
-changeOrderRouter.route('/:id').get(async (req, res, next) => {
-  try {
-    let changeOrder = await changeOrderService.getChangeOrderByID(
-      req.app.get('db'),
-      req.params.id
-    );
-    let cleanCount = safeCountService.sanitizeData(changeOrder);
-    return res.status(200).json(cleanCount);
-  } catch (error) {
-    next(error);
-  }
-});
+changeOrderRouter
+  .route('/:id')
+  .get(async (req, res, next) => {
+    try {
+      let changeOrder = await changeOrderService.getChangeOrderByID(
+        req.app.get('db'),
+        req.params.id
+      );
+      let cleanCount = safeCountService.sanitizeData(changeOrder);
+      return res.status(200).json(cleanCount);
+    } catch (error) {
+      next(error);
+    }
+  })
+  .patch(bodyParser, async (req, res, next) => {
+    try {
+      const { date, quarters, dimes, nickles, pennies, ones, fives } = req.body;
+      const newCount = {
+        id: date,
+        quarters,
+        dimes,
+        nickles,
+        pennies,
+        ones,
+        fives
+      };
+      const schema = Joi.object({
+        id: Joi.date(),
+        quarters: Joi.number().integer(),
+        dimes: Joi.number().integer(),
+        nickles: Joi.number().integer(),
+        pennies: Joi.number().integer(),
+        ones: Joi.number().integer(),
+        fives: Joi.number().integer()
+      });
+
+      const validation = Joi.validate(newCount, schema);
+
+      if (validation.error) {
+        return res.status(400).json({
+          error: 'All inputs must be whole numbers and date must be vaild'
+        });
+      }
+
+      await changeOrderService.updateChangeOrder(
+        req.app.get('db'),
+        newCount,
+        req.params.id
+      );
+      res.status(204).end();
+      next();
+    } catch (error) {
+      next(error);
+    }
+  })
+  .delete(async (req, res, next) => {
+    try {
+      await changeOrderService.deleteChangeOrder(
+        req.app.get('db'),
+        req.params.id
+      );
+      res.status(204).end();
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
 
 changeOrderRouter.route('/generatecount/:id').get(async (req, res, next) => {
   try {
@@ -89,7 +147,7 @@ changeOrderRouter.route('/generatecount/:id').get(async (req, res, next) => {
       req.params.id
     );
     if (todaySafeCount.length === 0) {
-      return res.status(404).json({error: 'Today\'s safe count not entered'});
+      return res.status(404).json({ error: 'Today\'s safe count not entered' });
     }
 
     const changeOrderDenominations = [

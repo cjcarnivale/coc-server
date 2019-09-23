@@ -24,6 +24,19 @@ const changeOrderService = {
       .insert(newChangeOrder)
       .into('change_order')
       .returning('*');
+  },
+
+  updateChangeOrder(db, newCount, id) {
+    return db('change_order')
+      .where({ id })
+      .update(newCount)
+      .returning('*');
+  },
+
+  deleteChangeOrder(db, id){
+    return db('change_order')
+      .where({ id })
+      .delete(); 
   }
 };
 
